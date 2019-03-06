@@ -4,6 +4,17 @@ USB_PORT="/dev/ttyUSB0"
 FQBN="esp8266:esp8266:nodemcu"
 DIR="main"
 MODE=$1
+BROKER_IP="192.168.0.104"
+BASE_TOPIC="homie/"
+DEVICE_ID="gong"
+FIRMWARE_PATH="build/main.ino.bin"
+
+if [ "$MODE" = "ota" ] || [ -z "$MODE" ]
+then
+    echo "Updating via OTA..."
+        python ota/ota_updater.py -l $BROKER_IP -t $BASE_TOPIC -i $DEVICE_ID $FIRMWARE_PATH
+    exit 1
+fi
 
 if [ "$MODE" = "get" ] || [ -z "$MODE" ]
 then
@@ -25,12 +36,6 @@ if [ "$MODE" = "upload" ] || [ -z "$MODE" ]
 then
     echo "Uploading..."
     arduino-cli upload -p $USB_PORT --fqbn $FQBN
-fi
-
-if [ "$MODE" = "spiffs" ]
-then
-    mkspiffs -c ~/Arduino/ds18b20/data/ -p 256 -b 8192 -s 1028096 /tmp/out.spiffs
-    esptool -cd nodemcu -cb 460800 -cp $USB_PORT -ca 0x300000 -cf /tmp/out.spiffs
 fi
 
 cd ../
