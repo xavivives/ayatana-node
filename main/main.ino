@@ -1,10 +1,10 @@
 #include <Homie.h>
 
-const int PIN_RELAY = 2;
+const int RELAY_PIN = 2;
 
-HomieNode lightNode("light", "switch");
+HomieNode relayNode("relay", "switch");
 
-bool lightOnHandler(const HomieRange &range, const String &value)
+bool onRelay(const HomieRange &range, const String &value)
 {
   Serial << "\nGot something: " << value << endl;
 
@@ -12,9 +12,9 @@ bool lightOnHandler(const HomieRange &range, const String &value)
     return false;
 
   bool on = (value == "true");
-  digitalWrite(PIN_RELAY, on ? HIGH : LOW);
-  lightNode.setProperty("on").send(value);
-  Homie.getLogger() << "Light is " << (on ? "on" : "off") << endl;
+  digitalWrite(RELAY_PIN, on ? HIGH : LOW);
+  relayNode.setProperty("on").send(value);
+  Homie.getLogger() << "Relay is " << (on ? "on" : "off") << endl;
 
   return true;
 }
@@ -24,12 +24,12 @@ void setup()
   Serial.begin(115200);
   Serial << endl
          << endl;
-  pinMode(PIN_RELAY, OUTPUT);
-  digitalWrite(PIN_RELAY, LOW);
+  pinMode(RELAY_PIN, OUTPUT);
+  digitalWrite(RELAY_PIN, LOW);
 
   Homie_setFirmware("awesome-relay", "1.0.0");
 
-  lightNode.advertise("on").settable(lightOnHandler);
+  relayNode.advertise("on").settable(onRelay);
 
   Homie.setup();
 }
