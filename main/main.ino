@@ -1,35 +1,22 @@
 #include <Homie.h>
+#include <Automaton.h>
 
-const int RELAY_PIN = 2;
+const int ANALOG_IN_PIN = 0;
+Atm_analog currentMeter;
 
-HomieNode relayNode("relay", "switch");
+HomieNode currentNode("relay", "switch");
 
-bool onRelay(const HomieRange &range, const String &value)
-{
-  Serial << "\nGot something: " << value << endl;
-
-  if (value != "true" && value != "false")
-    return false;
-
-  bool on = (value == "true");
-  digitalWrite(RELAY_PIN, on ? HIGH : LOW);
-  relayNode.setProperty("on").send(value);
-  Homie.getLogger() << "Relay is " << (on ? "on" : "off") << endl;
-
-  return true;
-}
 
 void setup()
 {
   Serial.begin(115200);
   Serial << endl
          << endl;
-  pinMode(RELAY_PIN, OUTPUT);
-  digitalWrite(RELAY_PIN, LOW);
 
-  Homie_setFirmware("awesome-relay", "1.0.0");
+  Homie_setFirmware("currentMeter", "1.0.0");
+  currentNode.advertise("current");
+  currentMeter.begin(ANALOG_IN_PIN, 1000).onChange( onCurrentChange);
 
-  relayNode.advertise("on").settable(onRelay);
 
   Homie.setup();
 }
@@ -37,4 +24,11 @@ void setup()
 void loop()
 {
   Homie.loop();
+  currentMeter.cycle();
+}
+
+void onCurrentChange( int idx, int v, int up ) {
+   Serial << "\nReading " << v << endl;
+  // Do something when the analog value changes
+
 }
