@@ -9,7 +9,7 @@ BASE_TOPIC="homie/"
 DEVICE_ID="gong"
 FIRMWARE_PATH="build/main.ino.bin"
 
-if [ "$MODE" = "ota" ] || [ -z "$MODE" ]
+if [ "$MODE" = "ota" ]
 then
     echo "Updating via OTA..."
         python ota/ota_updater.py -l $BROKER_IP -t $BASE_TOPIC -i $DEVICE_ID $FIRMWARE_PATH
