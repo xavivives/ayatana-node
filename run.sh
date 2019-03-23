@@ -8,6 +8,7 @@ BROKER_IP="192.168.0.104"
 BASE_TOPIC="homie/"
 DEVICE_ID="gong"
 FIRMWARE_PATH="build/main.ino.bin"
+CONFIG_PATH="$DIR/data/config.json"
 
 if [ "$MODE" = "ota" ]
 then
@@ -15,6 +16,14 @@ then
         python ota/ota_updater.py -l $BROKER_IP -t $BASE_TOPIC -i $DEVICE_ID $FIRMWARE_PATH
     exit 1
 fi
+
+if [ "$MODE" = "config" ]
+then
+    echo "Uploading config..."
+        curl -X PUT http://192.168.123.1/config --header "Content-Type: application/json" -d @$CONFIG_PATH
+    exit 1
+fi
+
 
 if [ "$MODE" = "get" ] || [ -z "$MODE" ]
 then
