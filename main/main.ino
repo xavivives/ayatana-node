@@ -6,7 +6,7 @@
 const int ANALOG_IN_PIN = 0;
 Atm_analog currentMeter;
 
-const vcc = 3.15;
+const float vcc = 3.15;
 const float z1 = 178000;
 const float z2 = 270000;
 const float readOffset = -7;
