@@ -21,21 +21,22 @@ void setup()
   Homie_setFirmware("airSensor", "1.0.0");
   airNode.advertise("air");
 
-  Wire.begin(D3,D4); // Define which ESP8266 pins to use for SDA, SCL of the Sensor
-  Wire.setClock(100000);    // Set I2C bus speed 
-  
+ // Wire.begin(D2, D1);
+  Wire.setClock(2000000);    // Set I2C bus speed 
+  Wire.begin(D2,D1); // Define which ESP8266 pins to use for SDA, SCL of the Sensor
+  //bme.begin(0x76);
   if (!bme.begin(0x76)) {
     Serial.println("Could not find a valid BME280 sensor, check wiring!");
   }
 
   delay(100);
 
+  Homie.setup();
+
   timer.begin(2000)
       .repeat(ATM_COUNTER_OFF)
       .onTimer(timer_callback)
       .start();
-
-  Homie.setup();
 }
 
 void loop()
