@@ -1,18 +1,16 @@
 #include <Homie.h>
 #include <Automaton.h>
+#include <Wire.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BME280.h>
 
-//ADC_MODE(ADC_VCC); Triggers wifi disconnect event?
+#define SEALEVELPRESSURE_HPA (1013.25)
 
-const int ANALOG_IN_PIN = 0;
-Atm_analog currentMeter;
+Adafruit_BME280 bme;
+Atm_timer timer;
+HomieNode airNode("AirSensor", "air");
 
-const float vcc = 3.15;
-const float z1 = 178000;
-const float z2 = 270000;
-const float readOffset = -7;
-const float sensorOffset = -0.72;
-
-HomieNode currentNode("CurrentSensor", "current");
+float temperature, humidity, pressure, altitude;
 
 void setup()
 {
@@ -20,38 +18,50 @@ void setup()
   Serial << endl
          << endl;
 
-  Homie_setFirmware("currentMeter", "1.0.0");
-  currentNode.advertise("current");
-  currentMeter.begin(ANALOG_IN_PIN, 1000).onChange(onCurrentChange);
+  Homie_setFirmware("airSensor", "1.0.0");
+  airNode.advertise("air");
+
+ // Wire.begin(D2, D1);
+  Wire.setClock(2000000);    // Set I2C bus speed 
+  Wire.begin(D2,D1); // Define which ESP8266 pins to use for SDA, SCL of the Sensor
+  //bme.begin(0x76);
+  if (!bme.begin(0x77)) {
+    Serial.println("Could not find a valid BME280 sensor, check wiring!");
+  }
+
+
+  
+  delay(100);
 
   Homie.setup();
+
+  timer.begin(2000)
+      .repeat(ATM_COUNTER_OFF)
+      .onTimer(timer_callback)
+      .start();
 }
 
 void loop()
 {
   Homie.loop();
-  currentMeter.cycle();
+  automaton.run();
 }
 
-void onCurrentChange(int idx, int v, int up)
+void timer_callback(int idx, int v, int up)
 {
-  //float vcc = ((float)ESP.getVcc())/1024;
-  float zeroCurrentVoltage = 5/2; //Get real tension
+  read();
+}
 
-  float cleanRead = v + readOffset;
-  float readVoltage = cleanRead * vcc / 1024; //digital read to volts
-  float tensionMultiplier = readVoltage / (z2 / (z1 + z2));
-  float cleanSensed = tensionMultiplier + sensorOffset;
-  float difference = cleanSensed - zeroCurrentVoltage;
-  float tensionToCurrent = difference/(66/1000);
-  
-  Serial << "\nRead: " << v
-    << ", NoOffset: " << cleanRead
-    << ", readVoltage: "<< readVoltage
-    << ", TensionMultiplier: " << tensionMultiplier
-    << ", CleanSensed: "<< cleanSensed
-    << ", Difference: " << difference
-    <<", Current: "<< tensionToCurrent
-    <<", Vcc: "<< vcc
-    << endl;
+void read()
+{
+  temperature = bme.readTemperature();
+  humidity = bme.readHumidity();
+  pressure = bme.readPressure() / 100.0F;
+  altitude = bme.readAltitude(SEALEVELPRESSURE_HPA);
+
+  Serial << "\ntemperature: " << temperature
+         << ", humidity: " << humidity
+         << ", pressure: " << pressure
+         << ", altitude: " << altitude
+         << endl;
 }
