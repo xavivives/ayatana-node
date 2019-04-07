@@ -21,7 +21,7 @@ void setup()
   Homie_setFirmware("airSensor", "1.0.0");
   airNode.advertise("air");
 
-  Wire.begin(D3,D4); // Define which ESP8266 pins to use for SDA, SCL of the Sensor
+  Wire.begin(D6,D5); // Define which ESP8266 pins to use for SDA, SCL of the Sensor
   Wire.setClock(100000);    // Set I2C bus speed 
   
   if (!bme.begin(0x76)) {
