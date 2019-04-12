@@ -8,7 +8,8 @@
 
 Adafruit_BME280 bme;
 Atm_timer timer;
-HomieNode airNode("AirSensor", "air");
+
+HomieNode airNode("BME280", "airSensor");
 
 float temperature, humidity, pressure, altitude;
 
@@ -21,12 +22,14 @@ void setup()
   Homie_setFirmware("airSensor", "1.0.0");
   airNode.advertise("air");
 
+  /*
   Wire.begin(D6,D5); // Define which ESP8266 pins to use for SDA, SCL of the Sensor
   Wire.setClock(100000);    // Set I2C bus speed 
   
   if (!bme.begin(0x76)) {
     Serial.println("Could not find a valid BME280 sensor, check wiring!");
   }
+  */
 
   delay(100);
 
@@ -51,14 +54,19 @@ void timer_callback(int idx, int v, int up)
 
 void read()
 {
-  temperature = bme.readTemperature();
-  humidity = bme.readHumidity();
-  pressure = bme.readPressure() / 100.0F;
-  altitude = bme.readAltitude(SEALEVELPRESSURE_HPA);
+  //temperature = bme.readTemperature();
+  //humidity = bme.readHumidity();
+  //pressure = bme.readPressure() / 100.0F;
+  //altitude = bme.readAltitude(SEALEVELPRESSURE_HPA);
+  temperature = 1.0;
 
   Serial << "\ntemperature: " << temperature
-         << ", humidity: " << humidity
-         << ", pressure: " << pressure
-         << ", altitude: " << altitude
+        // << ", humidity: " << humidity
+        // << ", pressure: " << pressure
+        // << ", altitude: " << altitude
          << endl;
+
+  airNode.setProperty("temperature").send(String(temperature));
+  //airNode.setProperty("humidity").send(String(humidity));
+  //airNode.setProperty("pressure").send(String(pressure));
 }
