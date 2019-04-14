@@ -8,7 +8,7 @@
 
 //Adafruit_BME280 bme;
 //Atm_timer timer;
-const int TEMPERATURE_INTERVAL = 5000;
+unsigned long TEMPERATURE_INTERVAL = 5000;
 unsigned long lastTemperatureSent = 0;
 
 HomieNode airNode("BME280", "airSensor");
@@ -41,31 +41,52 @@ void setup()
       .onTimer(timer_callback)
       .start();
 */
+  airNode.advertise("air");
+  airNode.advertise("trigger").settable(onTrigger);
   Homie.setup();
+  Homie.getLogger() << "Homie logger setup: " << endl;
+}
+
+bool onTrigger(const HomieRange &range, const String &value)
+{
+  Serial << "\nGot something: " << value << endl;
+
+  if (value != "true" && value != "false")
+    return false;
+
+  bool on = (value == "true");
+
+  Homie.getLogger() << "Relay is " << (on ? "on" : "off") << endl;
+
+  return true;
 }
 
 void setupHandler()
 {
-  airNode.advertise("air");
+  Serial << "\n Connected to MQTT "<< endl;
+  
 }
 
 void loopHandler()
 {
-  if (millis() - lastTemperatureSent >= TEMPERATURE_INTERVAL * 1000UL || lastTemperatureSent == 0) {
-    read();
-    lastTemperatureSent = millis();
-  }
+  Serial << "\n Looped after MQTT connection"<< endl;
 }
 
 void loop()
 {
   Homie.loop();
+
+  if (millis() - lastTemperatureSent >= TEMPERATURE_INTERVAL || lastTemperatureSent == 0)
+  {
+    read();
+    lastTemperatureSent = millis();
+  }
   //automaton.run();
 }
 
 //void timer_callback(int idx, int v, int up)
 //{
-  //read();
+//read();
 //}
 
 void read()
