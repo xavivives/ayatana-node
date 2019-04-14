@@ -69,14 +69,14 @@ void setupHandler()
 
 void loopHandler()
 {
-  Serial << "\n Looped after MQTT connection"<< endl;
+  //Serial << "\n Looped after MQTT connection"<< endl;
 }
 
 void loop()
 {
   Homie.loop();
 
-  if (millis() - lastTemperatureSent >= TEMPERATURE_INTERVAL || lastTemperatureSent == 0)
+  if (millis() - lastTemperatureSent > TEMPERATURE_INTERVAL)
   {
     read();
     lastTemperatureSent = millis();
@@ -103,7 +103,7 @@ void read()
          // << ", altitude: " << altitude
          << endl;
          */
-
+  Serial << "\n Read"<< endl;
   Homie.getLogger() << "Temperature: " << temperature << " °C" << endl;
   airNode.setProperty("temperature").send(String(temperature));
   //airNode.setProperty("humidity").send(String(humidity));
