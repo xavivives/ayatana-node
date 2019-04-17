@@ -1,4 +1,6 @@
 #include <Homie.h>
+
+#include <Homie.h>
 //#include <Automaton.h>
 //#include <Wire.h>
 //#include <Adafruit_Sensor.h>
@@ -11,7 +13,7 @@
 unsigned long TEMPERATURE_INTERVAL = 5000;
 unsigned long lastTemperatureSent = 0;
 
-HomieNode airNode("BME280", "airSensor");
+HomieNode airNode("BME280", "airSensor", "third");
 
 float temperature, humidity, pressure, altitude;
 
@@ -22,16 +24,15 @@ void setup()
          << endl;
 
   Homie_setFirmware("airSensor", "1.0.0");
-  airNode.advertise("temperature");
-  airNode.advertise("trigger").settable(onTrigger);
+  Homie.setLoopFunction(loopHandler);
+
+  airNode.advertise("temperature").setName("Degrees").setDatatype("float").setUnit("ºC");
   Homie.setup();
 
   /*
   Wire.begin(D6,D5); // Define which ESP8266 pins to use for SDA, SCL of the Sensor
   Wire.setClock(100000);    // Set I2C bus speed 
   */
- 
- 
 
   //delay(100);
 
@@ -40,13 +41,12 @@ void setup()
       .onTimer(timer_callback)
       .start();
 */
- 
+
   Homie.getLogger() << "Homie logger setup: " << endl;
 
   //if (!bme.begin(0x76)) {
   //  Serial.println("Could not find a valid BME280 sensor, check wiring!");
   //}
-  
 }
 
 bool onTrigger(const HomieRange &range, const String &value)
@@ -67,12 +67,16 @@ void loop()
 {
   Homie.loop();
 
+  //automaton.run();
+}
+
+void loopHandler()
+{
   if (millis() - lastTemperatureSent > TEMPERATURE_INTERVAL)
   {
     read();
     lastTemperatureSent = millis();
   }
-  //automaton.run();
 }
 
 //void timer_callback(int idx, int v, int up)
@@ -94,7 +98,7 @@ void read()
          // << ", altitude: " << altitude
          << endl;
          */
-  Serial << "\n Read"<< endl;
+  Serial << "\n Read" << endl;
   Homie.getLogger() << "Temp: " << temperature << " °C" << endl;
   airNode.setProperty("temperature").send(String(temperature));
   //airNode.setProperty("humidity").send(String(humidity));
